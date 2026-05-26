@@ -28,10 +28,9 @@ class OfflineNoticePlugin(Star):
         logger.info("离线通知心跳检测已启动")
 
     @filter.event_message_type(filter.EventMessageType.ALL)
+    @filter.platform_adapter_type(filter.PlatformAdapterType.AIOCQHTTP)
     async def on_event(self, event: AstrMessageEvent):
-        """用来捕捉 bot_offline 的通知事件"""
-        if event.get_platform_name() != "aiocqhttp":
-            return
+        """用来捕捉 bot_offline 的通知事件（目前没用）"""
         raw = event.message_obj.raw_message
         if not isinstance(raw, dict):
             return
