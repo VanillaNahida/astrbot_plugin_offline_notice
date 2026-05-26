@@ -18,12 +18,12 @@
             "sender": {
                 "description": "发信地址",
                 "type": "string",
-                "hint": "邮件显示的发件人地址"
+                "hint": "邮件显示的发件人地址，一般与发信邮箱用户名相同"
             },
             "password": {
                 "description": "发信邮箱密码/授权码",
                 "type": "string",
-                "hint": "SMTP 登录密码或授权码（QQ邮箱等需要使用授权码）"
+                "hint": "SMTP 登录密码或授权码。"
             },
             "display_name": {
                 "description": "发件人显示名称",
