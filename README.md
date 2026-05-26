@@ -47,7 +47,7 @@ bot_offline 通知缓存 → {时间, 类型, 详情}
 
 > [!WARNING]
 >
-> 请确保您的 AstrBot 版本号 ≥ `v4.16`，且已配置好 aiocqhttp 协议端。
+> 目前插件会导致官机webhook回调被误判成aiocqhttp平台消息事件导致误发邮件，该问题会在后续版本中修复，敬请期待。
 
 > [!TIP]
 >
