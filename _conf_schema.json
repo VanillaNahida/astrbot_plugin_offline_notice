@@ -1,0 +1,79 @@
+{
+    "heartbeat_interval": {
+        "description": "心跳检测间隔（秒）",
+        "type": "int",
+        "default": 180,
+        "hint": "每隔多少秒检测一次账号在线状态"
+    },
+    "email_config": {
+        "description": "邮件发送配置",
+        "type": "object",
+        "hint": "配置用于发送离线通知的 SMTP 邮箱信息",
+        "items": {
+            "username": {
+                "description": "发信邮箱用户名",
+                "type": "string",
+                "hint": "用于登录 SMTP 服务器的用户名，通常与发信地址相同"
+            },
+            "sender": {
+                "description": "发信地址",
+                "type": "string",
+                "hint": "邮件显示的发件人地址"
+            },
+            "password": {
+                "description": "发信邮箱密码/授权码",
+                "type": "string",
+                "hint": "SMTP 登录密码或授权码（QQ邮箱等需要使用授权码）"
+            },
+            "display_name": {
+                "description": "发件人显示名称",
+                "type": "string",
+                "default": "AstrBot 离线通知",
+                "hint": "收件人看到的发件人名称"
+            },
+            "smtp_server": {
+                "description": "SMTP 服务器地址",
+                "type": "string",
+                "hint": "例如 smtp.qq.com"
+            },
+            "smtp_port": {
+                "description": "SMTP 端口号",
+                "type": "int",
+                "default": 465,
+                "hint": "SSL 通常为 465，TLS 通常为 587，不加密通常为 25"
+            },
+            "encryption": {
+                "description": "加密类型",
+                "type": "string",
+                "options": ["SSL", "TLS", "不启用"],
+                "default": "SSL",
+                "hint": "SMTP 连接使用的加密方式"
+            },
+            "recipients": {
+                "description": "通知收件人邮箱列表",
+                "type": "list",
+                "default": [],
+                "hint": "离线通知将发送到这些邮箱地址"
+            }
+        }
+    },
+    "email_template": {
+        "description": "邮件模板配置",
+        "type": "object",
+        "hint": "自定义邮件主题和正文，支持魔法变量：{{user_id}}、{{nickname}}、{{timestamp}}、{{platform}}、{{offline_reason}}",
+        "items": {
+            "subject": {
+                "description": "邮件主题模板",
+                "type": "text",
+                "default": "【账号离线通知】账号 {{nickname}}({{user_id}}) 已离线",
+                "hint": "支持魔法变量：{{user_id}}、{{nickname}}、{{timestamp}}、{{platform}}、{{offline_reason}}"
+            },
+            "body": {
+                "description": "邮件正文模板",
+                "type": "text",
+                "default": "<div style=\"max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333;\">\n  <div style=\"background:#e74c3c;padding:20px;border-radius:8px 8px 0 0;\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px;\">⚠️ 账号离线通知</h1>\n  </div>\n  <div style=\"background:#fff;padding:25px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;\">\n    <p style=\"font-size:15px;line-height:1.6;\">检测到 <strong>AstrBot</strong> 账号已离线，以下是详细信息：</p>\n    <table style=\"width:100%;border-collapse:collapse;margin:15px 0;\">\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;width:100px;\">账号 ID</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{user_id}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">昵称</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{nickname}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">平台</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{platform}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">检测时间</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{timestamp}}</td></tr>\n    </table>\n    {{offline_reason}}\n    <p style=\"color:#e74c3c;font-size:14px;\">请及时前往协议端检查处理。</p>\n  </div>\n  <div style=\"text-align:center;padding:15px;color:#999;font-size:12px;\">此邮件由 AstrBot 离线通知插件自动发送</div>\n</div>",
+                "hint": "支持 HTML 格式，可使用魔法变量：{{user_id}}、{{nickname}}、{{timestamp}}、{{platform}}、{{offline_reason}}"
+            }
+        }
+    }
+}

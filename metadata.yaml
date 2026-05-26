@@ -1,0 +1,9 @@
+name: astrbot_plugin_offline_notice
+display_name: QQ账号离线通知
+desc: 一个专门为QQ个人号平台打造的掉线检测插件，定时检测QQ账号的在线状态，离线时第一时间通过邮件通知用户。
+version: v1.0.0
+author: 香草味的纳西妲喵（VanillaNahida）
+repo: https://github.com/VanillaNahida/astrbot_plugin_offline_notice
+support_platforms:
+  - aiocqhttp
+astrbot_version: ">=4.16,<5"
