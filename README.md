@@ -6,7 +6,7 @@
 
 
 <p align="center">
-  <img src="logo.png" alt="圣娅怪叫（太臭了哼哼啊啊啊啊啊啊啊啊啊啊啊！）">
+  <img src="logo.png" alt="圣娅怪叫.png（太臭了哼哼啊啊啊啊啊啊啊啊啊啊啊！）">
 </p>
 
 <div align="center">
