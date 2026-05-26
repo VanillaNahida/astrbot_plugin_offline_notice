@@ -67,7 +67,7 @@
                 "type": "text",
                 "editor_mode": true,
                 "editor_language": "text",
-                "default": "【账号离线通知】账号 {{nickname}}({{user_id}}) 已离线",
+                "default": "您的账号 {{nickname}}({{user_id}}) 已于 {{timestamp}} 离线",
                 "hint": "支持魔法变量：{{user_id}}、{{nickname}}、{{timestamp}}、{{platform}}、{{offline_reason}}"
             },
             "body": {
