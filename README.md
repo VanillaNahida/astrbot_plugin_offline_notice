@@ -1,5 +1,7 @@
 # QQ账号离线通知
 
+![:name](https://count.getloli.com/@astrbot_plugin_offline_notice?name=astrbot_plugin_offline_notice&theme=minecraft&padding=6&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+
 一个专门为 QQ 个人号平台打造的掉线检测插件，定时检测 QQ 账号的在线状态，离线时第一时间通过邮件通知用户。仅支持 aiocqhttp（OneBot v11）。
 
 
