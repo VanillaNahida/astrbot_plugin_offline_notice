@@ -47,6 +47,10 @@ bot_offline 通知缓存 → {时间, 类型, 详情}
 >
 > 请确保您的 AstrBot 版本号 ≥ `v4.16`，且已配置好 aiocqhttp 协议端。
 
+> [!TIP]
+>
+> 由于框架限制，暂时无法捕捉到 `bot_offline` 通知事件，只能捕捉是否在线的事件，后续会尝试优化这个问题。
+
 ## 安装
 
 1. 在 AstrBot WebUI 插件市场搜索 `astrbot_plugin_offline_notice` 或 `QQ账号离线通知`
@@ -87,10 +91,6 @@ bot_offline 通知缓存 → {时间, 类型, 详情}
 | `{{offline_reason}}` | 离线原因详情（bot_offline 通知汇总） |
 
 正文支持 HTML 格式，默认提供一套美观的富文本邮件模板。
-
-> [!TIP]
->
-> 由于框架限制，暂时无法捕捉到 `bot_offline` 通知事件，只能捕捉是否在线的事件，后续会尝试优化这个问题。
 
 ## 验证配置
 
