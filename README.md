@@ -122,6 +122,9 @@ bot_offline 通知缓存 → {时间, 类型, 详情}
 如果在使用过程中遇到任何问题，请通过以下方式反馈：
 
 - [GitHub Issues](https://github.com/VanillaNahida/astrbot_plugin_offline_notice/issues)
+- QQ群：
+  - 三群：195260107（推荐）
+  - 四群：1074471035（闲聊群）
 
 # QQ 群
 
