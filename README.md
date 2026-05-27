@@ -17,6 +17,9 @@
   [![GitHub issues](https://img.shields.io/github/issues/VanillaNahida/astrbot_plugin_offline_notice?style=flat-square)](https://github.com/VanillaNahida/astrbot_plugin_offline_notice/issues)
   [![python3](https://img.shields.io/badge/Python-3.10+-blue.svg?style=flat-square)](https://www.python.org/)
   [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-brightgreen.svg?style=flat-square)]()
+  [![Author](https://img.shields.io/badge/%E4%BD%9C%E8%80%85-VanillaNahida-green)](https://github.com/VanillaNahida )
+
+
 
 </div>
 
