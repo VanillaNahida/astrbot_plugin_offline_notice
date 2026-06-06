@@ -77,6 +77,9 @@ class OfflineNoticePlugin(Star):
         for platform in platforms:
             platform_name = platform.__class__.__name__
 
+            if platform_name != "AiocqhttpAdapter":
+                continue
+
             try:
                 client = platform.get_client()
             except Exception as e:
