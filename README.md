@@ -63,10 +63,6 @@ QQ号-昵称缓存匹配 / 更新
 
 # 使用方法
 
-> [!WARNING]
->
-> 目前插件会导致官机webhook回调被误判成aiocqhttp平台消息事件导致误发邮件，该问题会在后续版本中修复，敬请期待。
-
 > [!TIP]
 >
 > 支持 SnowLuma Webhook 通知。配置插件后，Webhook URL 和 Body 模板会自动生成在配置页面中，将其填入 SnowLuma 的 WebUI 即可接收账号状态变更通知。
