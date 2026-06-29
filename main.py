@@ -1,16 +1,21 @@
 import asyncio
+import json
+import re
 from datetime import datetime
 from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import formataddr
 from smtplib import SMTP, SMTP_SSL
 
+from aiohttp import web
+
 from astrbot.api import AstrBotConfig, logger
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
+from astrbot.core.star.star_tools import StarTools
 
 
-@register("astrbot_plugin_offline_notice", "VanillaNahida", "账号离线邮件通知插件", "1.0.0",
+@register("astrbot_plugin_offline_notice", "香草味的纳西妲喵（VanillaNahida）", "账号离线邮件通知插件", "1.0.0",
           "https://github.com/VanillaNahida/astrbot_plugin_offline_notice")
 class OfflineNoticePlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -22,10 +27,19 @@ class OfflineNoticePlugin(Star):
         self._login_info_cache = {}
         self._offline_notices = {}
         self._api_fail_count = {}
+        self._webhook_runner = None
+        # Initialize data file path for offline notice persistence
+        data_dir = StarTools.get_data_dir("astrbot_plugin_offline_notice")
+        data_dir.mkdir(parents=True, exist_ok=True)
+        self._data_file = data_dir / "uin_nickname.json"
 
     async def initialize(self):
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
         logger.info("离线通知心跳检测已启动")
+        try:
+            await self._start_webhook_server()
+        except Exception as e:
+            logger.error(f"Webhook 服务器启动失败: {e}")
 
     @filter.event_message_type(filter.EventMessageType.ALL)
     @filter.platform_adapter_type(filter.PlatformAdapterType.AIOCQHTTP)
@@ -319,7 +333,252 @@ class OfflineNoticePlugin(Star):
         except (TypeError, ValueError):
             return 0
 
+    async def _start_webhook_server(self):
+        webhook_config = self.config.get("webhook", {})
+        host = webhook_config.get("host", "127.0.0.1")
+        port = self._get_int(webhook_config.get("port", 3051))
+
+        app = web.Application()
+        app.router.add_post("/notice/send", self._handle_webhook_notice)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, host, port)
+        await site.start()
+        self._webhook_runner = runner
+
+        url = f"http://{host}:{port}/notice/send"
+        token = webhook_config.get("access_token", "")
+        if token:
+            url += f"?token={token}"
+        try:
+            self.config["webhook"]["webhook_url"] = url
+        except Exception:
+            pass
+
+        body_template = (
+            '{\n'
+            '  "title": "账号状态通知：{event}",\n'
+            '  "desp": "您的账号状态发生了改变。\\n\\n'
+            '**昵称**：{nickname}\\n'
+            '**QQ号**：{uin}\\n'
+            '**当前状态**：{event}\\n'
+            '**时间**：{time}"\n'
+            '}'
+        )
+        try:
+            self.config["webhook"]["webhook_body_template"] = body_template
+        except Exception:
+            pass
+
+        logger.info(f"Webhook 服务器已启动: {url}")
+
+    async def _handle_webhook_notice(self, request: web.Request):
+        webhook_config = self.config.get("webhook", {})
+        configured_token = webhook_config.get("access_token", "")
+
+        if configured_token:
+            token = request.query.get("token", "")
+            if token != configured_token:
+                logger.warning(f"Webhook 通知 token 验证失败，来源: {request.remote}")
+                return web.json_response({"code": 403, "message": "invalid token"}, status=403)
+
+        try:
+            body = await request.json()
+        except Exception as e:
+            logger.warning(f"Webhook 通知 JSON 解析失败: {e}")
+            return web.json_response({"code": 400, "message": "invalid json"}, status=400)
+
+        title = body.get("title", "")
+        desp = body.get("desp", "")
+
+        if not title:
+            logger.warning("Webhook 通知缺少 title 字段")
+            return web.json_response({"code": 400, "message": "missing title"}, status=400)
+
+        parsed = self._parse_snowluma_body(title, desp)
+        desp_html = self._desp_to_html(desp)
+
+        uin = parsed["uin"]
+        nickname = parsed["nickname"]
+
+        if uin != "未知" and nickname == uin:
+            cached_nickname = self._lookup_nickname(uin)
+            if cached_nickname:
+                parsed["nickname"] = cached_nickname
+                logger.info(f"从缓存恢复昵称: {uin} -> {cached_nickname}")
+
+        if uin != "未知" and nickname != "未知" and nickname != uin:
+            self._update_uin_nickname(uin, nickname)
+
+        logger.info(
+            f"收到 SnowLuma 通知: event={parsed['event']}, "
+            f"uin={parsed['uin']}, nickname={parsed['nickname']}"
+        )
+        await self._send_snowluma_email(title=title, desp=desp, desp_html=desp_html, **parsed)
+
+        return web.json_response({"code": 0, "message": "ok"})
+
+    def _parse_snowluma_body(self, title: str, desp: str) -> dict:
+        result = {
+            "event": "unknown",
+            "uin": "未知",
+            "nickname": "未知",
+            "time": "",
+        }
+
+        event_match = re.search(r"账号状态通知[：:]\s*(\S+)", title)
+        if event_match:
+            raw_event = event_match.group(1)
+            event_map = {"offline": "离线", "online": "上线"}
+            result["event"] = event_map.get(raw_event, raw_event)
+
+        nickname_match = re.search(r"(?:\*\*)?昵称(?:\*\*)?[：:]\s*(.+)", desp)
+        if nickname_match:
+            result["nickname"] = nickname_match.group(1).strip()
+
+        uin_match = re.search(r"(?:\*\*)?QQ号(?:\*\*)?[：:]\s*(\d+)", desp)
+        if uin_match:
+            result["uin"] = uin_match.group(1)
+
+        time_match = re.search(r"(?:\*\*)?时间(?:\*\*)?[：:]\s*(.+)", desp)
+        if time_match:
+            result["time"] = self._format_time_gmt8(time_match.group(1).strip())
+
+        return result
+
+    @staticmethod
+    def _format_time_gmt8(time_str: str) -> str:
+        from datetime import timezone, timedelta
+        tz_gmt8 = timezone(timedelta(hours=8))
+        iso_patterns = [
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%f%z",
+        ]
+        for fmt in iso_patterns:
+            try:
+                dt = datetime.strptime(time_str, fmt)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt.astimezone(tz_gmt8).strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                continue
+        return time_str
+
+    @staticmethod
+    def _desp_to_html(desp: str) -> str:
+        result = desp
+        result = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", result)
+        parts = result.split("\n\n")
+        paragraphs = []
+        for part in parts:
+            lines = part.split("\n")
+            paragraphs.append("<br>".join(lines))
+        result = "</p><p>".join(paragraphs)
+        result = f"<p>{result}</p>"
+        return result
+
+    def _load_uin_nickname_map(self) -> dict:
+        try:
+            if self._data_file.exists():
+                with open(self._data_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        except Exception as e:
+            logger.warning(f"加载 uin_nickname.json 失败: {e}")
+        return {}
+
+    def _save_uin_nickname_map(self, data: dict):
+        try:
+            with open(self._data_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.warning(f"保存 uin_nickname.json 失败: {e}")
+
+    def _update_uin_nickname(self, uin: str, nickname: str):
+        data = self._load_uin_nickname_map()
+        data[uin] = {
+            "nickname": nickname,
+            "last_access": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        if len(data) > 10:
+            sorted_items = sorted(
+                data.items(), key=lambda x: x[1].get("last_access", "")
+            )
+            data = dict(sorted_items[-10:])
+        self._save_uin_nickname_map(data)
+
+    def _lookup_nickname(self, uin: str) -> str:
+        data = self._load_uin_nickname_map()
+        if uin in data:
+            data[uin]["last_access"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self._save_uin_nickname_map(data)
+            return data[uin]["nickname"]
+        return ""
+
+    async def _send_snowluma_email(
+        self, title: str, desp: str, desp_html: str,
+        event: str, uin: str, nickname: str, time: str,
+    ):
+        email_config = self.config.get("email_config", {})
+        recipients = email_config.get("recipients", [])
+
+        if not recipients:
+            logger.warning("未配置收件人邮箱，跳过发送 SnowLuma 通知邮件")
+            return
+
+        template_config = self.config.get("snowluma_email_template", {})
+        template_vars = {
+            "title": title,
+            "desp": desp,
+            "desp_html": desp_html,
+            "uin": uin,
+            "nickname": nickname,
+            "event": event,
+            "time": time,
+        }
+
+        subject_template = template_config.get("subject", "")
+        body_template = template_config.get("body", "")
+        subject = self._render_template(subject_template, template_vars)
+        body = self._render_template(body_template, template_vars)
+
+        sender = email_config.get("sender", "")
+        username = email_config.get("username", sender)
+        password = email_config.get("password", "")
+        display_name = email_config.get("display_name", "AstrBot 离线通知")
+        smtp_server = email_config.get("smtp_server", "")
+        smtp_port = self._get_int(email_config.get("smtp_port", 465))
+        encryption = email_config.get("encryption", "SSL")
+
+        if not all([sender, password, smtp_server]):
+            logger.error("邮件配置不完整，请检查发信地址、密码和 SMTP 服务器地址")
+            return
+
+        msg = MIMEText(body, "html", "utf-8")
+        msg["Subject"] = Header(subject, "utf-8")
+        msg["From"] = formataddr((display_name, sender))
+        msg["To"] = ", ".join(recipients)
+
+        try:
+            if encryption == "SSL":
+                server = SMTP_SSL(smtp_server, smtp_port, timeout=30)
+            else:
+                server = SMTP(smtp_server, smtp_port, timeout=30)
+                if encryption == "TLS":
+                    server.starttls()
+
+            server.login(username, password)
+            server.sendmail(sender, recipients, msg.as_string())
+            server.quit()
+
+            logger.info(f"SnowLuma 通知邮件已发送至: {', '.join(recipients)}")
+        except Exception as e:
+            logger.error(f"发送 SnowLuma 通知邮件失败: {e}")
+
     async def terminate(self):
+        if self._webhook_runner:
+            await self._webhook_runner.cleanup()
+            logger.info("Webhook 服务器已停止")
         if self._heartbeat_task and not self._heartbeat_task.done():
             self._heartbeat_task.cancel()
             try:

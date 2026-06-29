@@ -75,8 +75,70 @@
                 "type": "text",
                 "editor_mode": true,
                 "editor_language": "html",
-                "default": "<div style=\"max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333;\">\n  <div style=\"background:#e74c3c;padding:20px;border-radius:8px 8px 0 0;\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px;\">⚠️ 账号离线通知</h1>\n  </div>\n  <div style=\"background:#fff;padding:25px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;\">\n    <p style=\"font-size:15px;line-height:1.6;\">检测到 <strong>AstrBot</strong> 账号已离线，以下是详细信息：</p>\n    <table style=\"width:100%;border-collapse:collapse;margin:15px 0;\">\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;width:100px;\">账号 ID</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{user_id}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">昵称</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{nickname}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">平台</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{platform}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">检测时间</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{timestamp}}</td></tr>\n    </table>\n    {{offline_reason}}\n    <p style=\"color:#e74c3c;font-size:14px;\">请及时前往协议端检查处理。</p>\n  </div>\n  <div style=\"text-align:center;padding:15px;color:#999;font-size:12px;\">此邮件由 AstrBot 离线通知插件自动发送</div>\n</div>",
+                "default": "<div style=\"max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333;\">\n  <div style=\"background:#e74c3c;padding:20px;border-radius:8px 8px 0 0;\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px;\">⚠️ 账号离线通知</h1>\n  </div>\n  <div style=\"background:#fff;padding:25px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;\">\n    <p style=\"font-size:15px;line-height:1.6;\">检测到 <strong>AstrBot</strong> 账号已离线，以下是详细信息：</p>\n    <table style=\"width:100%;border-collapse:collapse;margin:15px 0;\">\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;width:100px;\">账号 ID</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{user_id}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">昵称</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{nickname}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">平台</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{platform}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">检测时间</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{timestamp}}</td></tr>\n    </table>\n    {{offline_reason}}\n    <p style=\"color:#e74c3c;font-size:14px;\">请及时前往协议端检查处理。</p>\n  </div>\n  <div style=\"text-align:center;padding:15px;color:#999;font-size:12px;\">Powered By：香草味的纳西妲喵（VanillaNahida） | 此邮件由 AstrBot 离线通知插件自动发送</div>\n</div>",
                 "hint": "支持 HTML 格式，可使用魔法变量：{{user_id}}、{{nickname}}、{{timestamp}}、{{platform}}、{{offline_reason}}"
+             }
+         }
+    },
+    "webhook": {
+        "description": "SnowLuma Webhook 配置",
+        "type": "object",
+        "hint": "配置接收 SnowLuma 状态通知的 Webhook 服务器",
+        "items": {
+            "host": {
+                "description": "Webhook 服务器主机名",
+                "type": "string",
+                "default": "127.0.0.1",
+                "hint": "监听地址，默认为 127.0.0.1"
+            },
+            "port": {
+                "description": "Webhook 服务器端口",
+                "type": "int",
+                "default": 3051,
+                "hint": "监听端口，默认为 3051"
+            },
+            "access_token": {
+                "description": "访问令牌",
+                "type": "string",
+                "default": "",
+                "hint": "用于验证请求的访问令牌（可选）"
+            },
+            "webhook_url": {
+                "description": "Webhook 地址（自动生成，请勿修改！）",
+                "type": "string",
+                "default": "",
+                "hint": "此字段由插件自动生成，请勿手动修改！保存配置后插件重载时将自动生成完整的 Webhook 地址，把这个填写到SnowLuma的 Webhook 配置中即可"
+            },
+            "webhook_body_template": {
+                "description": "Webhook Body 模板（自动生成，请勿修改！）",
+                "type": "text",
+                "editor_mode": true,
+                "editor_language": "json",
+                "default": "",
+                "hint": "此字段由插件自动生成，请勿手动修改！请将此 JSON 模板填写到 SnowLuma 的 Webhook Body 配置中"
+            }
+        }
+    },
+    "snowluma_email_template": {
+        "description": "SnowLuma 通知邮件模板配置",
+        "type": "object",
+        "hint": "自定义 SnowLuma 状态通知邮件的主题和正文，支持模板变量：{{title}}、{{uin}}、{{nickname}}、{{event}}、{{time}}、{{desp}}、{{desp_html}}",
+        "items": {
+            "subject": {
+                "description": "邮件主题模板",
+                "type": "text",
+                "editor_mode": true,
+                "editor_language": "text",
+                "hint": "支持模板变量：{{title}}、{{uin}}、{{nickname}}、{{event}}、{{time}}",
+                "default": "【SnowLuma 状态通知】您的账号 {{nickname}}({{uin}}) 已于 {{time}} {{event}}"
+            },
+            "body": {
+                "description": "邮件正文模板 (HTML)",
+                "type": "text",
+                "editor_mode": true,
+                "editor_language": "html",
+                "hint": "支持 HTML 格式，可使用模板变量：{{title}}、{{uin}}、{{nickname}}、{{event}}、{{time}}、{{desp}}、{{desp_html}}",
+                "default": "<div style=\"max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#333;\">\n  <div style=\"background:#3498db;padding:20px;border-radius:8px 8px 0 0;\">\n    <h1 style=\"color:#fff;margin:0;font-size:22px;\">SnowLuma 账号状态通知</h1>\n  </div>\n  <div style=\"background:#fff;padding:25px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;\">\n    <table style=\"width:100%;border-collapse:collapse;margin:15px 0;\">\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;width:100px;\">昵称</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{nickname}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">QQ号</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{uin}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">当前状态</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{event}}</td></tr>\n      <tr><td style=\"padding:10px 12px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:bold;\">时间</td><td style=\"padding:10px 12px;border:1px solid #e9ecef;\">{{time}}</td></tr>\n    </table>\n    <p style=\"color:#888;font-size:13px;margin-top:20px;border-top:1px solid #eee;padding-top:15px;\">Powered By：香草味的纳西妲喵（VanillaNahida） | 此邮件由 AstrBot 离线通知插件自动发送</p>\n  </div>\n</div>"
             }
         }
     }
